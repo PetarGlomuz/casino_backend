@@ -1,0 +1,125 @@
+var Encoding = require('encoding-japanese');
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    try{
+        return target.split(search).join(replacement);
+    }catch (ex) {
+    }
+    return target;
+};
+
+var Common  = module.exports;
+Common.getFileExt = function(fileName){
+    let dotPos = fileName.indexOf(".");
+    if (dotPos > 0){
+        return fileName.substring(dotPos);
+    }else{
+        return "";
+    }
+};
+
+Common.checkExpired = function(period){
+  try{
+      let ocr_year, ocr_month, ocr_day;
+      let sowaIndex   = period.indexOf('昭和');
+      let heseIndex   = period.indexOf('平成');
+      let yearIndex   = period.indexOf('年');
+      let monthIndex  = period.indexOf('月');
+      let dayIndex    = period.indexOf('日');
+      if(sowaIndex !== -1) {
+          ocr_year = parseInt(period.substring(2, yearIndex));
+          ocr_year = 1925 + ocr_year;
+      }else if(heseIndex !== -1){
+          ocr_year = parseInt(period.substring(2, yearIndex));
+          ocr_year = 1988 + ocr_year;
+      }else{
+          ocr_year = period.substring(0, yearIndex);
+      }
+      ocr_month = period.substring(yearIndex+1, monthIndex);
+      ocr_month = parseInt(ocr_month) < 10? '0' + parseInt(ocr_month): ocr_month;
+      ocr_month = parseInt(ocr_month);
+      ocr_day   = period.substring(monthIndex+1, dayIndex);
+      ocr_day   = parseInt(ocr_day) < 10? '0' + parseInt(ocr_day): ocr_day;
+      ocr_day   = parseInt(ocr_day);
+      let nowDate = new Date();
+      let cur_year = nowDate.getFullYear();
+      let cur_month = nowDate.getMonth() + 1;
+      let cur_day = nowDate.getDate();
+      console.log(ocr_year, ocr_month, ocr_day);
+      console.log(cur_year, cur_month, cur_day);
+      if(cur_year < ocr_year) return false;
+      if(cur_year > ocr_year) return true;
+      // equal cur_year = ocr_year
+      if(cur_month < ocr_month) return false;
+      if(cur_month > ocr_month) return true;
+      // equal cur_month = ocr_month
+      if(cur_day < ocr_day) return false;
+      if(cur_day > ocr_day) return true;
+  }catch (e) {
+  }
+  return true;
+};
+
+Common.compareBirthday = function(ocr_birth, inputed_birth){
+    try{
+        console.log(ocr_birth, inputed_birth);
+        let ocr_year, ocr_month, ocr_day;
+        let sowaIndex   = ocr_birth.indexOf('昭和');
+        let yearIndex   = ocr_birth.indexOf('年');
+        let monthIndex  = ocr_birth.indexOf('月');
+        let dayIndex    = ocr_birth.indexOf('日');
+        if(sowaIndex === -1){
+            ocr_year = ocr_birth.substring(0, yearIndex);
+        }else{
+            ocr_year = parseInt(ocr_birth.substring(2, yearIndex));
+            ocr_year = 1925 + ocr_year;
+        }
+        ocr_month = ocr_birth.substring(yearIndex+1, monthIndex);
+        ocr_month = parseInt(ocr_month) < 10? '0' + parseInt(ocr_month): ocr_month;
+        ocr_day   = ocr_birth.substring(monthIndex+1, dayIndex);
+        ocr_day   = parseInt(ocr_day) < 10? '0' + parseInt(ocr_day): ocr_day;
+
+        let tempArr = inputed_birth.split('.');
+        let input_year  = tempArr[0];
+        let input_month = tempArr[1];
+        input_month = parseInt(input_month) < 10? '0' + parseInt(input_month): input_month;
+        let input_day   = tempArr[2];
+        input_day = parseInt(input_day) < 10? '0' + parseInt(input_day): input_day;
+        console.log(ocr_year, input_year, ocr_month ,input_month ,ocr_day ,input_day);
+        if(ocr_year === input_year && ocr_month === input_month && ocr_day === input_day)
+            return true;
+    }catch (e) {
+        console.log(e);
+    }
+    return false;
+};
+
+Common.compareName = function(ocr_name, inputed_name){
+    try{
+        ocr_name = ocr_name.replaceAll(' ', '').toLowerCase().trim();
+        inputed_name = inputed_name.replaceAll(' ', '').toLowerCase().trim();
+        if(ocr_name === inputed_name) return true;
+    }catch (e) {
+
+    }
+    return false;
+};
+
+Common.decodeJPString = function (input) {
+    try{
+        var eucjpArray = Encoding.urlDecode(input);
+        var detected = Encoding.detect(eucjpArray);
+        if(detected !== 'EUCJP'){
+            var output = decodeURI(decodeURI(input));
+            return output;
+        }
+        var utf8Array = Encoding.convert(eucjpArray, {
+            to: 'UNICODE',
+            from: 'EUCJP'
+        });
+        return decodeURI(Encoding.codeToString(utf8Array));
+    }catch (e) {
+        console.log('error in "decodeJPString" : ', input);
+    }
+};

@@ -1,0 +1,7 @@
+{
+  "ext": "js html",
+  "ignore": [
+    "log/*.json",
+    "cookies/*.*"
+  ]
+}

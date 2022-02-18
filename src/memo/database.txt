@@ -1,0 +1,5 @@
+[TABLE]  bd_boodong
+ - area1: smallint
+    도
+- area2: smallint
+    시, 군
